@@ -1,9 +1,0 @@
-# GitHub上传命令 - 请替换为您的仓库URL
-
-# 连接到您的GitHub仓库 (替换your_username为您的GitHub用户名)
-git remote add origin https://github.com/your_username/cloud-detection.git
-
-# 上传到GitHub
-git push -u origin main
-
-# 完成后继续Railway部署步骤 
