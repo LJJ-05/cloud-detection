@@ -1,0 +1,52 @@
+# Railway部署时忽略的文件和目录
+
+# 开发工具和配置
+.git/
+.gitignore
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# 测试和文档
+*_test.py
+test_*.py
+tests/
+*.md
+*.txt
+!requirements_optimized.txt
+
+# 原始Docker配置（我们用Railway专用版本）
+Dockerfile
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile.optimized
+
+# 部署脚本和配置
+deploy_script.sh
+deploy.bat
+deploy.sh
+nginx.conf
+
+# 示例和GUI文件
+client_example.py
+detect_gui.py
+test_api.py
+api_usage_example.py
+
+# 部署指南
+deploy_*.md
+
+# 日志和临时文件
+*.log
+.env
+.env.local
+tmp/
+temp/
+
+# 重要：不要忽略static目录（网页界面）
+# !static/ 
