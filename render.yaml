@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: cloud-detection
+    env: docker
+    dockerfilePath: ./Dockerfile.railway
+    plan: free
+    envVars:
+      - key: MODEL_PATH
+        value: /app/models/best.pt
+      - key: PORT
+        value: 10000 
