@@ -1,231 +1,171 @@
-# YOLO能效标识检测API服务
+# 🌤️ 云检测AI模型API服务
 
-这是一个基于YOLO模型的能效标识检测API服务，使用Flask和ONNX Runtime构建。
+这是一个基于**YOLO PyTorch模型**的智能云层检测API服务，使用Flask + Docker构建，支持云端部署。
 
-## 功能特性
+## ✨ 功能特性
 
-- 支持单张图片检测
-- 支持批量图片检测
-- 支持文件上传和Base64编码两种输入方式
-- 提供健康检查接口
-- Docker容器化部署
+- 🔍 **智能检测**：基于YOLOv8的云层识别
+- 📤 **多种输入**：支持文件上传和Base64编码
+- 🌐 **Web界面**：精美的在线演示页面
+- 🐳 **容器化**：Docker一键部署
+- ☁️ **云端部署**：支持Railway、Render等平台
+- 📊 **健康检查**：实时服务状态监控
 
-## 项目结构
+## 🏗️ 项目结构
 
 ```
 Cloud_detection/
-├── app.py                 # Flask应用主文件
-├── requirements.txt       # Python依赖
-├── Dockerfile            # Docker镜像构建文件
-├── docker-compose.yml    # Docker Compose配置
-├── .dockerignore         # Docker忽略文件
-├── README.md             # 项目说明
-└── models/               # 模型文件目录
-    └── best.onnx         # YOLO模型文件
+├── app_pytorch.py           # Flask API主应用
+├── static/index.html        # 网页演示界面
+├── models/best.pt          # YOLO PyTorch模型
+├── requirements_optimized.txt # 云端优化依赖
+├── Dockerfile.railway       # Railway平台配置
+├── render.yaml             # Render平台配置
+├── railway.json            # Railway部署配置
+└── 部署指南_*.md           # 各平台部署指南
 ```
 
-## 部署步骤
+## 🚀 快速开始
 
-### 1. 准备模型文件
-
-将您的`best.onnx`模型文件放到`models/`目录下：
+### 本地运行
 
 ```bash
-mkdir models
-cp /path/to/your/best.onnx models/
+# 1. 克隆项目
+git clone https://github.com/LJJ-05/cloud-detection.git
+cd cloud-detection
+
+# 2. 安装依赖
+pip install -r requirements_optimized.txt
+
+# 3. 启动服务
+python app_pytorch.py
+
+# 4. 访问网页界面
+# http://localhost:5000
 ```
 
-### 2. 本地Docker部署
-
-#### 方法一：使用Docker Compose（推荐）
+### Docker部署
 
 ```bash
-# 构建并启动服务
-docker-compose up --build
+# 构建并运行
+docker build -f Dockerfile.railway -t cloud-detection .
+docker run -p 5000:5000 cloud-detection
 
-# 后台运行
-docker-compose up -d --build
-
-# 查看日志
-docker-compose logs -f
-
-# 停止服务
-docker-compose down
+# 或使用docker-compose
+docker-compose up -d
 ```
 
-#### 方法二：使用Docker命令
+## ☁️ 云端部署
 
+### 🌟 Render平台 (推荐免费)
+
+1. 访问 [render.com](https://render.com)
+2. 连接GitHub仓库：`LJJ-05/cloud-detection`
+3. 选择Web Service，自动部署
+4. 获得公网URL：`https://cloud-detection.onrender.com`
+
+### 🚂 Railway平台
+
+1. 访问 [railway.app](https://railway.app)
+2. 从GitHub部署此仓库
+3. 自动检测配置并构建
+
+详细部署指南请查看：`部署指南_*.md` 文件
+
+## 🔗 API接口
+
+### 健康检查
 ```bash
-# 构建镜像
-docker build -t yolo-detection-api .
-
-# 运行容器
-docker run -d \
-  --name yolo-detection \
-  -p 5000:5000 \
-  -v $(pwd)/models:/app/models \
-  yolo-detection-api
-
-# 查看日志
-docker logs -f yolo-detection
-
-# 停止容器
-docker stop yolo-detection
-docker rm yolo-detection
+GET /health
 ```
 
-### 3. 云端部署
-
-#### 部署到云服务器
-
-1. **上传代码到服务器**
+### 图像检测
 ```bash
-# 使用scp或git上传代码
-scp -r . user@your-server:/path/to/project/
+POST /detect
+Content-Type: multipart/form-data
+
+参数:
+- image: 图像文件
+- conf_threshold: 置信度阈值 (默认0.5)
+- nms_threshold: NMS阈值 (默认0.4)
 ```
 
-2. **在服务器上部署**
-```bash
-cd /path/to/project
-docker-compose up -d --build
-```
-
-#### 部署到云平台
-
-**阿里云/腾讯云/华为云等：**
-
-1. 在云平台创建ECS实例
-2. 安装Docker和Docker Compose
-3. 上传代码并运行上述Docker命令
-
-**使用云容器服务：**
-
-1. 将代码推送到Git仓库
-2. 在云平台创建容器服务
-3. 配置构建规则和部署参数
-
-## API接口说明
-
-### 1. 健康检查
-
-```bash
-GET http://localhost:5000/health
-```
-
-响应示例：
-```json
-{
-  "status": "healthy",
-  "timestamp": "2024-01-01T12:00:00",
-  "model_loaded": true
-}
-```
-
-### 2. 单张图片检测
-
-#### 文件上传方式
-
-```bash
-curl -X POST http://localhost:5000/detect \
-  -F "image=@/path/to/image.jpg"
-```
-
-#### Base64编码方式
-
-```bash
-curl -X POST http://localhost:5000/detect \
-  -H "Content-Type: application/json" \
-  -d '{
-    "image_base64": "base64_encoded_image_string",
-    "conf_threshold": 0.5,
-    "nms_threshold": 0.4
-  }'
-```
-
-响应示例：
+### 响应格式
 ```json
 {
   "success": true,
+  "total_detections": 2,
   "predictions": [
     {
-      "bbox": [100, 200, 300, 400],
-      "confidence": 0.95,
+      "bbox": [100, 50, 200, 150],
+      "confidence": 0.85,
       "class_id": 0,
-      "class_name": "energy_label_0"
+      "class_name": "cloud"
     }
   ],
-  "total_detections": 1,
   "timestamp": "2024-01-01T12:00:00"
 }
 ```
 
-### 3. 批量检测
+## 🖥️ 网页演示
 
-```bash
-curl -X POST http://localhost:5000/detect_batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "images": ["base64_image_1", "base64_image_2"],
-    "conf_threshold": 0.5,
-    "nms_threshold": 0.4
-  }'
+访问根路径 `/` 即可使用精美的网页界面：
+- 📸 拖拽上传图片
+- ⚙️ 调整检测参数
+- 📊 可视化结果展示
+- 📱 支持移动端访问
+
+## 🛠️ 技术栈
+
+- **AI框架**：PyTorch + Ultralytics YOLOv8
+- **Web框架**：Flask + Gunicorn
+- **前端**：原生HTML/CSS/JavaScript
+- **容器化**：Docker
+- **云平台**：Railway, Render, 阿里云, 腾讯云
+
+## 📊 性能优化
+
+- 🏃‍♂️ **轻量化模型**：优化的PyTorch模型
+- 🔄 **智能缓存**：pip缓存清理
+- 👤 **安全运行**：非root用户
+- 📦 **多阶段构建**：减小镜像大小
+
+## 🤝 使用示例
+
+### Python调用
+```python
+import requests
+
+url = "https://your-app.onrender.com/detect"
+files = {'image': open('test.jpg', 'rb')}
+response = requests.post(url, files=files)
+print(response.json())
 ```
 
-## 环境变量配置
+### JavaScript调用
+```javascript
+const formData = new FormData();
+formData.append('image', fileInput.files[0]);
 
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| MODEL_PATH | /app/models/best.onnx | 模型文件路径 |
-| FLASK_ENV | production | Flask环境 |
-| FLASK_APP | app.py | Flask应用文件 |
-
-## 性能优化建议
-
-1. **GPU加速**：如果有GPU，可以修改Dockerfile使用GPU版本的ONNX Runtime
-2. **多进程**：调整gunicorn的worker数量
-3. **缓存**：添加Redis缓存层
-4. **负载均衡**：使用Nginx做反向代理
-
-## 故障排除
-
-### 常见问题
-
-1. **模型加载失败**
-   - 检查模型文件路径是否正确
-   - 确认模型文件格式为ONNX
-
-2. **内存不足**
-   - 减少gunicorn worker数量
-   - 增加服务器内存
-
-3. **端口被占用**
-   - 修改docker-compose.yml中的端口映射
-   - 检查是否有其他服务占用5000端口
-
-### 日志查看
-
-```bash
-# Docker Compose日志
-docker-compose logs -f
-
-# Docker容器日志
-docker logs -f container_name
-
-# 应用日志
-docker exec -it container_name tail -f /app/app.log
+fetch('/detect', {
+    method: 'POST',
+    body: formData
+}).then(response => response.json())
+  .then(data => console.log(data));
 ```
 
-## 安全建议
+## 📄 许可证
 
-1. 添加API认证机制
-2. 限制文件上传大小
-3. 添加请求频率限制
-4. 使用HTTPS
-5. 定期更新依赖包
+MIT License
 
-## 监控和维护
+## 🌟 特性预览
 
-1. 设置健康检查
-2. 配置日志收集
-3. 设置自动重启策略
-4. 监控资源使用情况 
+部署成功后，您将拥有：
+- 🌐 **公网访问**：任何人都可以使用的AI服务
+- 📱 **移动友好**：响应式设计，支持手机访问  
+- 🔒 **安全可靠**：HTTPS加密，健康检查
+- 💡 **易于集成**：标准REST API，支持各种编程语言
+
+---
+
+**�� 让您的AI模型为全世界服务！** 

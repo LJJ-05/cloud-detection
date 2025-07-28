@@ -30,7 +30,7 @@ RUN mkdir -p /app/models
 EXPOSE 5000
 
 # 设置环境变量
-ENV MODEL_PATH=/app/models/best.onnx
+ENV MODEL_PATH=/app/models/best.pt
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 

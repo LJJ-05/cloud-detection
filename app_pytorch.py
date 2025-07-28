@@ -160,7 +160,12 @@ if __name__ == '__main__':
     try:
         detector = YOLODetector(model_path)
         print("模型加载成功，启动服务...")
-        app.run(host='0.0.0.0', port=5000, debug=False)
+        
+        # 支持云平台的PORT环境变量
+        port = int(os.getenv('PORT', 5000))
+        print(f"服务将在端口 {port} 启动")
+        
+        app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         print(f"启动失败: {e}")
         traceback.print_exc() 
