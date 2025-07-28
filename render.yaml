@@ -2,12 +2,11 @@ services:
   - type: web
     name: cloud-detection
     env: docker
-    dockerfilePath: ./Dockerfile.render
+    dockerfilePath: ./Dockerfile.minimal
     plan: free
     envVars:
       - key: MODEL_PATH
         value: /app/models/best.pt
       - key: PYTHONUNBUFFERED
         value: "1"
-    healthCheckPath: /health
-    dockerCommand: gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 app_lightweight:app 
+    healthCheckPath: /health 
