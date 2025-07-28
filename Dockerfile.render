@@ -1,0 +1,50 @@
+# Render平台专用Dockerfile - 内存优化版本
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# 安装系统依赖（最小化）
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libgomp1 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && apt-get autoremove -y
+
+# 复制依赖文件
+COPY requirements_optimized.txt ./requirements.txt
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip cache purge
+
+# 先创建models目录
+RUN mkdir -p /app/models
+
+# 复制模型文件（确保存在）
+COPY models/best.pt /app/models/best.pt
+
+# 复制正确的应用文件 - 使用轻量版
+COPY app_lightweight.py ./app.py
+COPY static/ ./static/
+
+# 验证文件是否存在
+RUN ls -la /app/models/ && echo "Model file size:" && du -h /app/models/best.pt
+
+# 设置环境变量
+ENV MODEL_PATH=/app/models/best.pt
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# 创建非root用户
+RUN useradd --create-home --shell /bin/bash app \
+    && chown -R app:app /app
+USER app
+
+# 暴露端口
+EXPOSE $PORT
+
+# 启动命令 - 确保使用正确的应用
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 1 --timeout 300 --max-requests 100 app:app 
